@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const subscriptionPlans = [
   {
@@ -93,6 +94,16 @@ const simuladoPackages = [
 ];
 
 const PricingPlans = () => {
+  const navigate = useNavigate();
+
+  const handleSubscriptionClick = (plan: typeof subscriptionPlans[0]) => {
+    navigate(`/checkout?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price + plan.period)}`);
+  };
+
+  const handlePackageClick = (pkg: typeof simuladoPackages[0]) => {
+    navigate(`/checkout?plan=${encodeURIComponent(pkg.name)}&price=${encodeURIComponent(pkg.price)}`);
+  };
+
   return (
     <section id="pricing" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -147,6 +158,7 @@ const PricingPlans = () => {
                     variant={plan.highlighted ? "cta" : "default"}
                     className="w-full"
                     size="lg"
+                    onClick={() => handleSubscriptionClick(plan)}
                   >
                     Assinar Agora
                   </Button>
@@ -194,7 +206,12 @@ const PricingPlans = () => {
                   </ul>
                 </CardContent>
                 <CardFooter>
-                  <Button variant="outline" className="w-full" size="lg">
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    size="lg"
+                    onClick={() => handlePackageClick(pkg)}
+                  >
                     Comprar Pacote
                   </Button>
                 </CardFooter>
