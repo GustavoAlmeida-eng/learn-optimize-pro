@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -5,12 +7,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogIn } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn, user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Login logic will be implemented here
-    console.log("Login submitted");
+    setIsLoading(true);
+    try {
+      await signIn(email, password);
+    } catch (error) {
+      // Error is handled in useAuth hook
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -40,6 +61,8 @@ const Login = () => {
                   id="email"
                   type="email"
                   placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
@@ -49,11 +72,13 @@ const Login = () => {
                   id="password"
                   type="password"
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              <Button type="submit" className="w-full" size="lg">
-                Entrar
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
             
