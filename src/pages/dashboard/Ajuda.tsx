@@ -1,40 +1,29 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Ajuda = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Dashboard
-          </Button>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
+    <DashboardLayout>
+      <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-heading font-bold mb-6">Ajuda e Suporte</h1>
-        
         <Card>
           <CardHeader>
-            <CardTitle>Central de Ajuda</CardTitle>
-            <CardDescription>
-              FAQ, tutoriais e contato direto com nossa equipe
-            </CardDescription>
+            <CardTitle>Perguntas Frequentes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">
-              Esta funcionalidade está sendo desenvolvida e estará disponível em breve.
-            </p>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="item-1">
+                <AccordionTrigger>Como criar um simulado?</AccordionTrigger>
+                <AccordionContent>
+                  Acesse "Novo Simulado" no menu e configure suas preferências.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

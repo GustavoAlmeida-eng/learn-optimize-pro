@@ -1,40 +1,20 @@
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
+import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   BarChart3,
   BookOpen,
   Clock,
-  FileText,
   GraduationCap,
   HelpCircle,
   Library,
-  LogOut,
   Settings,
   CreditCard,
 } from "lucide-react";
 
 const Dashboard = () => {
-  const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-lg">Carregando...</div>
-      </div>
-    );
-  }
-
-  if (!user) return null;
 
   const menuItems = [
     {
@@ -96,26 +76,8 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-heading font-bold text-foreground">EstudaMax</h1>
-            <p className="text-sm text-muted-foreground">Área do Cliente</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground hidden sm:block">
-              {user.email}
-            </span>
-            <Button variant="outline" onClick={signOut} size="sm">
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
+    <DashboardLayout>
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-heading font-bold mb-2">
             Bem-vindo de volta! 👋
@@ -150,8 +112,8 @@ const Dashboard = () => {
             );
           })}
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
