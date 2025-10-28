@@ -1,12 +1,12 @@
 import Header from "@/components/Header";
-import VideoSection from "@/components/VideoSection";
+import VideoSectionRegular from "@/components/VideoSectionRegular";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import PricingPlans from "@/components/PricingPlans";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, PlayCircle, BookOpen, Brain, Users } from "lucide-react";
+import { ArrowRight, PlayCircle, BookOpen, GraduationCap, TrendingUp, Award } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const IndexRegular = () => {
@@ -36,11 +36,11 @@ const IndexRegular = () => {
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-secondary via-accent to-secondary bg-clip-text text-transparent animate-slide-up">
-              Aprendizado Contínuo no Ensino Regular
+              Transforme Suas Notas com Estudo Inteligente
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 animate-slide-up-delay-1">
-              Acompanhe o conteúdo escolar, reforce seu aprendizado e prepare-se para
-              as provas com exercícios organizados por série e disciplina.
+              Domine todas as matérias do ensino fundamental e médio com exercícios organizados
+              por série, disciplina e nível de dificuldade. Aprenda no seu ritmo!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up-delay-2">
               <Button
@@ -64,30 +64,30 @@ const IndexRegular = () => {
 
             <div className="grid grid-cols-3 gap-8 mt-16 animate-slide-up-delay-3">
               <div>
-                <BookOpen className="h-8 w-8 text-secondary mx-auto mb-2" />
+                <GraduationCap className="h-8 w-8 text-secondary mx-auto mb-2" />
                 <div className="text-3xl md:text-4xl font-bold text-secondary mb-2">
-                  5000+
+                  8000+
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Exercícios Escolares
+                  Exercícios por Série
                 </div>
               </div>
               <div>
-                <Brain className="h-8 w-8 text-accent mx-auto mb-2" />
+                <TrendingUp className="h-8 w-8 text-accent mx-auto mb-2" />
                 <div className="text-3xl md:text-4xl font-bold text-accent mb-2">
-                  90%
+                  95%
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Melhoria nas Notas
+                  Aproveitamento Escolar
                 </div>
               </div>
               <div>
-                <Users className="h-8 w-8 text-primary mx-auto mb-2" />
+                <Award className="h-8 w-8 text-primary mx-auto mb-2" />
                 <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
-                  3k+
+                  5k+
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Alunos Ativos
+                  Estudantes Regulares
                 </div>
               </div>
             </div>
@@ -95,7 +95,7 @@ const IndexRegular = () => {
         </div>
       </section>
 
-      <VideoSection />
+      <VideoSectionRegular />
       <Features />
       <HowItWorks />
       <PricingPlans planType="regular" />
