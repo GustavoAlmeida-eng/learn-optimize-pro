@@ -93,15 +93,21 @@ const simuladoPackages = [
   },
 ];
 
-const PricingPlans = () => {
+interface PricingPlansProps {
+  planType?: 'enem' | 'regular';
+}
+
+const PricingPlans = ({ planType }: PricingPlansProps = {}) => {
   const navigate = useNavigate();
 
   const handleSubscriptionClick = (plan: typeof subscriptionPlans[0]) => {
-    navigate(`/checkout?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price + plan.period)}`);
+    const planParam = planType ? `&planType=${planType}` : '';
+    navigate(`/login?plan=${planType || 'enem'}`);
   };
 
   const handlePackageClick = (pkg: typeof simuladoPackages[0]) => {
-    navigate(`/checkout?plan=${encodeURIComponent(pkg.name)}&price=${encodeURIComponent(pkg.price)}`);
+    const planParam = planType ? `&planType=${planType}` : '';
+    navigate(`/login?plan=${planType || 'enem'}`);
   };
 
   return (

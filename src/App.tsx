@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
+import IndexEnem from "./pages/IndexEnem";
+import IndexRegular from "./pages/IndexRegular";
 import About from "./pages/About";
 import Login from "./pages/Login";
 import Checkout from "./pages/Checkout";
@@ -30,6 +32,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/enem" element={<IndexEnem />} />
+            <Route path="/regular" element={<IndexRegular />} />
             <Route path="/sobre" element={<About />} />
             <Route path="/login" element={<Login />} />
             <Route path="/checkout" element={<Checkout />} />

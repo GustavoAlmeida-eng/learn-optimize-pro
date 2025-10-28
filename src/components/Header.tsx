@@ -19,7 +19,7 @@ const Header = () => {
           <nav className="hidden md:flex items-center gap-2">
             <Button
               variant="ghost"
-              onClick={() => navigate("/?mode=enem")}
+              onClick={() => navigate("/enem")}
               className="gap-2"
             >
               <GraduationCap className="h-4 w-4" />
@@ -27,7 +27,7 @@ const Header = () => {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => navigate("/?mode=escolar")}
+              onClick={() => navigate("/regular")}
               className="gap-2"
             >
               <BookOpen className="h-4 w-4" />
