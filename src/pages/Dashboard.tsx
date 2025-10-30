@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import {
   BarChart3,
   BookOpen,
@@ -19,25 +20,51 @@ import {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [planType, setPlanType] = useState<'enem' | 'regular' | null>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserData = async () => {
       if (user) {
-        const { data } = await supabase
+        // Buscar o tipo de plano do usuário
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('plan_type')
           .eq('id', user.id)
           .maybeSingle();
         
-        if (data) {
-          setPlanType(data.plan_type as 'enem' | 'regular');
+        if (profileData) {
+          setPlanType(profileData.plan_type as 'enem' | 'regular');
+        }
+
+        // Verificar se o usuário tem uma assinatura ativa
+        const { data: subscriptionData, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (subscriptionData && !error) {
+          setHasActiveSubscription(true);
+        } else {
+          // Se não tem assinatura ativa, redirecionar para a página de planos
+          toast({
+            title: "Assinatura necessária",
+            description: "Você precisa de uma assinatura ativa para acessar o dashboard.",
+            variant: "destructive",
+          });
+          const planRoute = profileData?.plan_type === 'regular' ? '/regular' : '/enem';
+          navigate(`${planRoute}#pricing`);
         }
       }
+      setLoading(false);
     };
 
-    fetchUserProfile();
-  }, [user]);
+    fetchUserData();
+  }, [user, navigate, toast]);
 
   const menuItems = [
     {
@@ -105,6 +132,20 @@ const Dashboard = () => {
   const greetingMessage = planType === 'enem' 
     ? "Preparado para conquistar sua aprovação? 🎯"
     : "Pronto para aprender mais hoje? 📚";
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-lg">Carregando...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!hasActiveSubscription) {
+    return null; // O useEffect já redireciona
+  }
 
   return (
     <DashboardLayout>

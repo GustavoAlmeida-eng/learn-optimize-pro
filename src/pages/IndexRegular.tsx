@@ -6,7 +6,8 @@ import PricingPlans from "@/components/PricingPlans";
 import FAQ from "@/components/FAQ";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, PlayCircle, BookOpen, GraduationCap, TrendingUp, Award } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, PlayCircle, BookOpen, GraduationCap, Target, TrendingUp, Award } from "lucide-react";
 import heroBackground from "@/assets/hero-background.jpg";
 
 const IndexRegular = () => {
@@ -97,7 +98,120 @@ const IndexRegular = () => {
 
       <VideoSectionRegular />
       <Features />
+      
+      {/* Nova seção: Depoimentos */}
+      <section className="py-20 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            O Que Nossos Alunos Dizem
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground mb-4">
+                  "Minhas notas melhoraram muito desde que comecei a usar a plataforma. Os exercícios são excelentes!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-semibold">LC</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold">Lucas Costa</p>
+                    <p className="text-sm text-muted-foreground">Aluno do 2º Ano - EM</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground mb-4">
+                  "Adoro os vídeos explicativos! Eles me ajudam a entender as matérias de um jeito mais fácil."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-semibold">BM</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold">Beatriz Mendes</p>
+                    <p className="text-sm text-muted-foreground">Aluna do 1º Ano - EM</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground mb-4">
+                  "A plataforma é muito organizada. Consigo estudar todas as matérias num só lugar!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-primary font-semibold">PS</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold">Pedro Santos</p>
+                    <p className="text-sm text-muted-foreground">Aluno do 3º Ano - EM</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <HowItWorks />
+      
+      {/* Nova seção: Vantagens da Plataforma */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            Vantagens da Nossa Plataforma
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <div className="text-center">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Todas as Matérias</h3>
+              <p className="text-muted-foreground">
+                Conteúdo completo de todas as disciplinas do Ensino Médio
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Target className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Exercícios Práticos</h3>
+              <p className="text-muted-foreground">
+                Milhares de questões para treinar e fixar o conteúdo
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Acompanhamento</h3>
+              <p className="text-muted-foreground">
+                Monitore seu progresso em tempo real com relatórios detalhados
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <PlayCircle className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Videoaulas</h3>
+              <p className="text-muted-foreground">
+                Aprenda com videoaulas explicativas de alta qualidade
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <PricingPlans planType="regular" />
       <FAQ />
       <Footer />

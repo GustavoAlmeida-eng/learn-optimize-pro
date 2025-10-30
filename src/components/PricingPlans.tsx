@@ -101,13 +101,11 @@ const PricingPlans = ({ planType }: PricingPlansProps = {}) => {
   const navigate = useNavigate();
 
   const handleSubscriptionClick = (plan: typeof subscriptionPlans[0]) => {
-    const planParam = planType ? `&planType=${planType}` : '';
-    navigate(`/login?plan=${planType || 'enem'}`);
+    navigate(`/checkout?plan=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(plan.price)}&type=subscription&planType=${planType || 'enem'}`);
   };
 
   const handlePackageClick = (pkg: typeof simuladoPackages[0]) => {
-    const planParam = planType ? `&planType=${planType}` : '';
-    navigate(`/login?plan=${planType || 'enem'}`);
+    navigate(`/checkout?plan=${encodeURIComponent(pkg.name)}&price=${encodeURIComponent(pkg.price)}&type=package&planType=${planType || 'enem'}`);
   };
 
   return (

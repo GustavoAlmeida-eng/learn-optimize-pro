@@ -66,8 +66,13 @@ const Login = () => {
 
       toast({
         title: "Conta criada com sucesso!",
-        description: "Redirecionando para o dashboard...",
+        description: "Redirecionando para escolher seu plano...",
       });
+
+      // Redirecionar para página de planos (PricingPlans)
+      setTimeout(() => {
+        navigate(`/${planType}#pricing`);
+      }, 1000);
     } catch (error) {
       toast({
         title: "Erro ao criar conta",

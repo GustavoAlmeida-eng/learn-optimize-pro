@@ -4,16 +4,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, CreditCard, Lock } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { user, loading } = useAuth();
   
   const planName = searchParams.get('plan') || 'Plano';
   const price = searchParams.get('price') || '0';
+  const planType = searchParams.get('planType') || 'enem';
   
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
@@ -21,26 +25,101 @@ const Checkout = () => {
   const [cvv, setCvv] = useState('');
   const [processing, setProcessing] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!loading && !user) {
+      toast({
+        title: "Acesso negado",
+        description: "Você precisa estar logado para acessar o checkout.",
+        variant: "destructive",
+      });
+      navigate(`/login?plan=${planType}`);
+    }
+  }, [user, loading, navigate, toast, planType]);
+
+  // Verificar se usuário tem assinatura ativa
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+        
+        if (data && !error) {
+          toast({
+            title: "Você já tem uma assinatura ativa",
+            description: "Redirecionando para o dashboard...",
+          });
+          navigate('/dashboard');
+        }
+      }
+    };
+
+    if (user) {
+      checkSubscription();
+    }
+  }, [user, navigate, toast]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);
     
-    // Simulação de processamento de pagamento
-    setTimeout(() => {
-      setProcessing(false);
+    try {
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
+      // Criar registro de assinatura no banco de dados
+      const expiresAt = new Date();
+      expiresAt.setMonth(expiresAt.getMonth() + 1); // 1 mês de acesso
+
+      const { error } = await supabase
+        .from('subscriptions')
+        .insert({
+          user_id: user.id,
+          plan_name: planName,
+          plan_price: price,
+          status: 'active',
+          payment_method: 'credit_card',
+          expires_at: expiresAt.toISOString(),
+        });
+
+      if (error) throw error;
+
       toast({
         title: "Pagamento processado!",
         description: "Sua assinatura foi ativada com sucesso.",
       });
-      navigate('/dashboard');
-    }, 2000);
+      
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
+    } catch (error: any) {
+      toast({
+        title: "Erro no pagamento",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessing(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate('/')}>
+          <Button variant="ghost" onClick={() => navigate(`/${planType}`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>

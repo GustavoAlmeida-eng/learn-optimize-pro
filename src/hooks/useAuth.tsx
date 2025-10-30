@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName,
           },
@@ -73,8 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) throw error;
 
-      toast.success("Cadastro realizado! Você já pode fazer login.");
-      navigate("/login");
+      // Não mostra mensagem de sucesso aqui, será tratado no componente Login
     } catch (error: any) {
       toast.error(error.message || "Erro ao criar conta");
       throw error;
