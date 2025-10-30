@@ -26,18 +26,6 @@ const Checkout = () => {
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      toast({
-        title: "Acesso negado",
-        description: "Você precisa estar logado para acessar o checkout.",
-        variant: "destructive",
-      });
-      navigate(`/login?plan=${planType}`);
-    }
-  }, [user, loading, navigate, toast, planType]);
-
-  // Verificar se usuário tem assinatura ativa
-  useEffect(() => {
     const checkSubscription = async () => {
       if (user) {
         const { data, error } = await supabase
@@ -57,45 +45,63 @@ const Checkout = () => {
       }
     };
 
-    if (user) {
+    if (user && !loading) {
       checkSubscription();
     }
-  }, [user, navigate, toast]);
+  }, [user, loading, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProcessing(true);
     
     try {
-      if (!user) {
-        throw new Error("Usuário não autenticado");
-      }
+      if (user) {
+        // Usuário já logado - criar assinatura diretamente
+        const expiresAt = new Date();
+        expiresAt.setMonth(expiresAt.getMonth() + 1);
 
-      // Criar registro de assinatura no banco de dados
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 1); // 1 mês de acesso
+        const { error } = await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: user.id,
+            plan_name: planName,
+            plan_price: price,
+            status: 'active',
+            payment_method: 'credit_card',
+            expires_at: expiresAt.toISOString(),
+          });
 
-      const { error } = await supabase
-        .from('subscriptions')
-        .insert({
-          user_id: user.id,
+        if (error) throw error;
+
+        toast({
+          title: "Pagamento processado!",
+          description: "Sua assinatura foi ativada com sucesso.",
+        });
+        
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1000);
+      } else {
+        // Usuário não logado - salvar dados temporários e redirecionar para registro
+        const subscriptionData = {
           plan_name: planName,
           plan_price: price,
-          status: 'active',
-          payment_method: 'credit_card',
-          expires_at: expiresAt.toISOString(),
+          plan_type: planType,
+          payment_completed: true,
+          timestamp: new Date().toISOString(),
+        };
+        
+        sessionStorage.setItem('pendingSubscription', JSON.stringify(subscriptionData));
+        
+        toast({
+          title: "Pagamento processado!",
+          description: "Agora crie sua conta para acessar a plataforma.",
         });
-
-      if (error) throw error;
-
-      toast({
-        title: "Pagamento processado!",
-        description: "Sua assinatura foi ativada com sucesso.",
-      });
-      
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+        
+        setTimeout(() => {
+          navigate(`/login?plan=${planType}&fromCheckout=true`);
+        }, 1000);
+      }
     } catch (error: any) {
       toast({
         title: "Erro no pagamento",
@@ -106,14 +112,6 @@ const Checkout = () => {
       setProcessing(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Carregando...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background">

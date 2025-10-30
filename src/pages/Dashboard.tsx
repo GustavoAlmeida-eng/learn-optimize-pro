@@ -50,14 +50,7 @@ const Dashboard = () => {
         if (subscriptionData && !error) {
           setHasActiveSubscription(true);
         } else {
-          // Se não tem assinatura ativa, redirecionar para a página de planos
-          toast({
-            title: "Assinatura necessária",
-            description: "Você precisa de uma assinatura ativa para acessar o dashboard.",
-            variant: "destructive",
-          });
-          const planRoute = profileData?.plan_type === 'regular' ? '/regular' : '/enem';
-          navigate(`${planRoute}#pricing`);
+          setHasActiveSubscription(false);
         }
       }
       setLoading(false);
@@ -66,7 +59,7 @@ const Dashboard = () => {
     fetchUserData();
   }, [user, navigate, toast]);
 
-  const menuItems = [
+  const allMenuItems = [
     {
       title: "Novo Simulado Personalizado",
       description: planType === 'enem' 
@@ -75,6 +68,7 @@ const Dashboard = () => {
       icon: GraduationCap,
       path: "/dashboard/novo-simulado",
       color: "bg-primary/10 text-primary",
+      requiresSubscription: true,
     },
     {
       title: "Análise de Desempenho",
@@ -82,6 +76,7 @@ const Dashboard = () => {
       icon: BarChart3,
       path: "/dashboard/desempenho",
       color: "bg-secondary/10 text-secondary",
+      requiresSubscription: true,
     },
     {
       title: "Meus Simulados",
@@ -89,6 +84,7 @@ const Dashboard = () => {
       icon: Clock,
       path: "/dashboard/historico",
       color: "bg-accent/10 text-accent",
+      requiresSubscription: true,
     },
     {
       title: "Biblioteca de Conteúdo",
@@ -96,6 +92,7 @@ const Dashboard = () => {
       icon: Library,
       path: "/dashboard/biblioteca",
       color: "bg-primary/10 text-primary",
+      requiresSubscription: true,
     },
     {
       title: "Buscar Questões",
@@ -105,6 +102,7 @@ const Dashboard = () => {
       icon: BookOpen,
       path: "/dashboard/questoes",
       color: "bg-secondary/10 text-secondary",
+      requiresSubscription: true,
     },
     {
       title: "Minha Conta",
@@ -112,6 +110,7 @@ const Dashboard = () => {
       icon: Settings,
       path: "/dashboard/configuracoes",
       color: "bg-accent/10 text-accent",
+      requiresSubscription: false,
     },
     {
       title: "Minha Assinatura",
@@ -119,6 +118,7 @@ const Dashboard = () => {
       icon: CreditCard,
       path: "/dashboard/assinatura",
       color: "bg-primary/10 text-primary",
+      requiresSubscription: false,
     },
     {
       title: "Ajuda / Suporte",
@@ -126,8 +126,13 @@ const Dashboard = () => {
       icon: HelpCircle,
       path: "/dashboard/ajuda",
       color: "bg-secondary/10 text-secondary",
+      requiresSubscription: false,
     },
   ];
+
+  const menuItems = hasActiveSubscription 
+    ? allMenuItems 
+    : allMenuItems.filter(item => !item.requiresSubscription);
 
   const greetingMessage = planType === 'enem' 
     ? "Preparado para conquistar sua aprovação? 🎯"
@@ -143,13 +148,17 @@ const Dashboard = () => {
     );
   }
 
-  if (!hasActiveSubscription) {
-    return null; // O useEffect já redireciona
-  }
-
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
+        {!hasActiveSubscription && (
+          <div className="mb-6 p-4 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-sm font-medium">
+              Você está no modo de avaliação. Para acessar todos os recursos, assine um plano na seção "Minha Assinatura".
+            </p>
+          </div>
+        )}
+        
         <div className={`mb-8 p-6 rounded-lg ${
           planType === 'enem' 
             ? 'bg-gradient-to-r from-primary/10 to-primary/5' 

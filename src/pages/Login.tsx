@@ -10,10 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn, GraduationCap, BookOpen } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const [searchParams] = useSearchParams();
   const planFromUrl = searchParams.get('plan');
+  const fromCheckout = searchParams.get('fromCheckout') === 'true';
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -21,7 +23,7 @@ const Login = () => {
   const [planType, setPlanType] = useState<'enem' | 'regular'>(
     (planFromUrl === 'regular' ? 'regular' : 'enem') as 'enem' | 'regular'
   );
-  const [activeTab, setActiveTab] = useState("login");
+  const [activeTab, setActiveTab] = useState(fromCheckout ? "signup" : "login");
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -58,8 +60,54 @@ const Login = () => {
     try {
       await signUp(email, password, fullName);
       
+      // Verificar se há assinatura pendente do checkout
+      const pendingSubscription = sessionStorage.getItem('pendingSubscription');
+      
+      if (pendingSubscription) {
+        const subscriptionData = JSON.parse(pendingSubscription);
+        
+        // Aguardar para garantir que o usuário foi criado
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Buscar o usuário recém criado
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        
+        if (newUser) {
+          // Atualizar o tipo de plano no perfil
+          await supabase
+            .from('profiles')
+            .update({ plan_type: subscriptionData.plan_type })
+            .eq('id', newUser.id);
+
+          // Criar assinatura
+          const expiresAt = new Date();
+          expiresAt.setMonth(expiresAt.getMonth() + 1);
+          
+          await supabase.from('subscriptions').insert({
+            user_id: newUser.id,
+            plan_name: subscriptionData.plan_name,
+            plan_price: subscriptionData.plan_price,
+            status: 'active',
+            payment_method: 'credit_card',
+            expires_at: expiresAt.toISOString(),
+          });
+          
+          sessionStorage.removeItem('pendingSubscription');
+          
+          toast({
+            title: "Conta criada com sucesso!",
+            description: "Sua assinatura está ativa. Redirecionando para o dashboard...",
+          });
+          
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 1500);
+          return;
+        }
+      }
+      
+      // Fluxo normal sem assinatura pendente
       // Atualizar metadata com tipo de plano
-      const { supabase } = await import("@/integrations/supabase/client");
       await supabase.auth.updateUser({
         data: { plan_type: planType }
       });
@@ -69,7 +117,7 @@ const Login = () => {
         description: "Redirecionando para escolher seu plano...",
       });
 
-      // Redirecionar para página de planos (PricingPlans)
+      // Redirecionar para página de planos
       setTimeout(() => {
         navigate(`/${planType}#pricing`);
       }, 1000);
