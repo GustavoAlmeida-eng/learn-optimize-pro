@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      analises_ia: {
+        Row: {
+          analise: string
+          created_at: string
+          id: string
+          simulado_id: string
+          user_id: string
+        }
+        Insert: {
+          analise: string
+          created_at?: string
+          id?: string
+          simulado_id: string
+          user_id: string
+        }
+        Update: {
+          analise?: string
+          created_at?: string
+          id?: string
+          simulado_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analises_ia_simulado_id_fkey"
+            columns: ["simulado_id"]
+            isOneToOne: false
+            referencedRelation: "simulados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -38,6 +70,149 @@ export type Database = {
           id?: string
           plan_type?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      questoes_geradas: {
+        Row: {
+          conteudos: Json
+          created_at: string
+          id: string
+          materias: Json
+          observacoes_adicionais: string | null
+          questoes: Json
+          serie_ou_vestibular: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          conteudos: Json
+          created_at?: string
+          id?: string
+          materias: Json
+          observacoes_adicionais?: string | null
+          questoes: Json
+          serie_ou_vestibular: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          conteudos?: Json
+          created_at?: string
+          id?: string
+          materias?: Json
+          observacoes_adicionais?: string | null
+          questoes?: Json
+          serie_ou_vestibular?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      questoes_simulado: {
+        Row: {
+          alternativas: Json
+          conteudo: string
+          correta: boolean | null
+          created_at: string
+          enunciado: string
+          id: string
+          materia: string
+          numero: number
+          resposta_correta: number
+          resposta_usuario: number | null
+          simulado_id: string
+        }
+        Insert: {
+          alternativas: Json
+          conteudo: string
+          correta?: boolean | null
+          created_at?: string
+          enunciado: string
+          id?: string
+          materia: string
+          numero: number
+          resposta_correta: number
+          resposta_usuario?: number | null
+          simulado_id: string
+        }
+        Update: {
+          alternativas?: Json
+          conteudo?: string
+          correta?: boolean | null
+          created_at?: string
+          enunciado?: string
+          id?: string
+          materia?: string
+          numero?: number
+          resposta_correta?: number
+          resposta_usuario?: number | null
+          simulado_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questoes_simulado_simulado_id_fkey"
+            columns: ["simulado_id"]
+            isOneToOne: false
+            referencedRelation: "simulados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulados: {
+        Row: {
+          acertos: number
+          completed_at: string | null
+          conteudos: Json
+          created_at: string
+          duracao_minutos: number | null
+          id: string
+          materias: Json
+          nota: number | null
+          observacoes_adicionais: string | null
+          questoes_respondidas: number
+          serie_ou_vestibular: string
+          status: string
+          tipo: string
+          titulo: string
+          total_questoes: number
+          user_id: string
+        }
+        Insert: {
+          acertos?: number
+          completed_at?: string | null
+          conteudos: Json
+          created_at?: string
+          duracao_minutos?: number | null
+          id?: string
+          materias: Json
+          nota?: number | null
+          observacoes_adicionais?: string | null
+          questoes_respondidas?: number
+          serie_ou_vestibular: string
+          status?: string
+          tipo: string
+          titulo: string
+          total_questoes?: number
+          user_id: string
+        }
+        Update: {
+          acertos?: number
+          completed_at?: string | null
+          conteudos?: Json
+          created_at?: string
+          duracao_minutos?: number | null
+          id?: string
+          materias?: Json
+          nota?: number | null
+          observacoes_adicionais?: string | null
+          questoes_respondidas?: number
+          serie_ou_vestibular?: string
+          status?: string
+          tipo?: string
+          titulo?: string
+          total_questoes?: number
+          user_id?: string
         }
         Relationships: []
       }
