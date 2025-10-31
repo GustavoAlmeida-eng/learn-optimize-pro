@@ -1,6 +1,10 @@
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSubscriptionCheck } from "@/hooks/useSubscriptionCheck";
+import { Button } from "@/components/ui/button";
+import { CreditCard } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -50,6 +54,48 @@ const distribuicaoPontos = [
 const COLORS = ["hsl(197, 83%, 40%)", "hsl(148, 76%, 80%)", "hsl(60, 56%, 91%)", "hsl(220, 20%, 40%)"];
 
 const Desempenho = () => {
+  const navigate = useNavigate();
+  const { hasActiveSubscription, loading } = useSubscriptionCheck();
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <p className="text-lg">Carregando...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!hasActiveSubscription) {
+    return (
+      <DashboardLayout>
+        <div className="container mx-auto px-4 py-8">
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                <CreditCard className="w-6 h-6 text-primary" />
+              </div>
+              <CardTitle className="text-2xl">Acesso Premium Necessário</CardTitle>
+              <CardDescription className="text-base">
+                Esta funcionalidade está disponível apenas para usuários com plano ativo.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-center">
+              <p className="mb-6 text-muted-foreground">
+                Para visualizar sua análise de desempenho, você precisa ter um plano ativo. 
+                Assine agora e tenha acesso completo a todas as funcionalidades da plataforma!
+              </p>
+              <Button onClick={() => navigate("/dashboard/assinatura")} size="lg">
+                Ver Planos Disponíveis
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="container mx-auto px-4 py-8">
