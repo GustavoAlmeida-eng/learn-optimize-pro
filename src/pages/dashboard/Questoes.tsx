@@ -1,91 +1,155 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Badge } from "@/components/ui/badge";
 import { useSubscriptionCheck } from "@/hooks/useSubscriptionCheck";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Loader2, History } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const materias = ["Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Português", "Inglês"];
-const dificuldades = ["Fácil", "Média", "Difícil"];
-
-const questoesExemplo = [
-  {
-    id: 1,
-    materia: "Matemática",
-    dificuldade: "Média",
-    enunciado: "Qual é o valor de x na equação 2x + 5 = 15?",
-    alternativas: ["x = 5", "x = 10", "x = 7,5", "x = 2,5"],
-    resposta: 0,
-  },
-  {
-    id: 2,
-    materia: "Física",
-    dificuldade: "Fácil",
-    enunciado: "Qual grandeza física mede a quantidade de matéria de um corpo?",
-    alternativas: ["Peso", "Massa", "Volume", "Densidade"],
-    resposta: 1,
-  },
-  {
-    id: 3,
-    materia: "Química",
-    dificuldade: "Difícil",
-    enunciado: "Qual é a fórmula molecular do ácido sulfúrico?",
-    alternativas: ["H2SO4", "HCl", "H3PO4", "HNO3"],
-    resposta: 0,
-  },
-];
+const materias: { [key: string]: string[] } = {
+  "Matemática": ["Álgebra", "Geometria", "Trigonometria", "Estatística", "Análise Combinatória", 
+    "Funções", "Equações", "Logaritmos", "Matrizes", "Probabilidade",
+    "Números Complexos", "Polinômios", "Sistemas Lineares", "Sequências", "Progressões",
+    "Limites", "Derivadas", "Integrais", "Geometria Analítica", "Geometria Espacial",
+    "Razão e Proporção", "Regra de Três", "Porcentagem", "Juros", "Matemática Financeira",
+    "Conjuntos", "Lógica", "Contagem", "Permutações", "Combinações"],
+  "Física": ["Mecânica", "Cinemática", "Dinâmica", "Energia", "Termodinâmica",
+    "Óptica", "Ondulatória", "Eletricidade", "Magnetismo", "Eletromagnetismo",
+    "Física Moderna", "Relatividade", "Física Quântica", "Gravitação", "Hidrostática",
+    "Trabalho e Potência", "Impulso", "Quantidade de Movimento", "Leis de Newton", "Atrito",
+    "Movimento Circular", "Oscilações", "Calorimetria", "Dilatação", "Gases",
+    "Reflexão", "Refração", "Espelhos", "Lentes", "Circuitos Elétricos"],
+  "Química": ["Química Geral", "Química Orgânica", "Físico-Química", "Química Inorgânica", "Estequiometria",
+    "Termoquímica", "Eletroquímica", "Cinética Química", "Equilíbrio Químico", "pH e pOH",
+    "Soluções", "Propriedades Coligativas", "Radioatividade", "Tabela Periódica", "Ligações Químicas",
+    "Reações Químicas", "Funções Orgânicas", "Isomeria", "Polímeros", "Bioquímica",
+    "Oxidação-Redução", "Ácidos e Bases", "Sais", "Óxidos", "Nomenclatura",
+    "Cálculos Estequiométricos", "Gases Ideais", "Colóides", "Corrosão", "Meio Ambiente"],
+  "Biologia": ["Citologia", "Genética", "Evolução", "Ecologia", "Fisiologia",
+    "Botânica", "Zoologia", "Microbiologia", "Biotecnologia", "Anatomia Humana",
+    "Histologia", "Embriologia", "Bioquímica", "Imunologia", "Parasitologia",
+    "Taxonomia", "Ciclos Biogeoquímicos", "Cadeias Alimentares", "Biomas", "Fotossíntese",
+    "Respiração Celular", "DNA e RNA", "Mutações", "Herança Genética", "Doenças",
+    "Sistema Nervoso", "Sistema Circulatório", "Sistema Digestório", "Sistema Reprodutor", "Sustentabilidade"]
+};
 
 const Questoes = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { hasActiveSubscription, loading } = useSubscriptionCheck();
+  const [planType, setPlanType] = useState<string>("");
+  const [serieOuVestibular, setSerieOuVestibular] = useState("");
   const [selectedMaterias, setSelectedMaterias] = useState<string[]>([]);
-  const [selectedDificuldade, setSelectedDificuldade] = useState("");
-  const [respostas, setRespostas] = useState<Record<number, number>>({});
-  const [mostrarResultado, setMostrarResultado] = useState(false);
+  const [conteudos, setConteudos] = useState<{ [key: string]: string[] }>({});
+  const [observacoesAdicionais, setObservacoesAdicionais] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    if (hasActiveSubscription) {
+      fetchUserPlan();
+    }
+  }, [hasActiveSubscription]);
+
+  const fetchUserPlan = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('plan_type')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      setPlanType(data?.plan_type || 'enem');
+    } catch (error) {
+      console.error('Error fetching user plan:', error);
+    }
+  };
 
   const handleMateriaToggle = (materia: string) => {
     if (selectedMaterias.includes(materia)) {
       setSelectedMaterias(selectedMaterias.filter(m => m !== materia));
+      const newConteudos = { ...conteudos };
+      delete newConteudos[materia];
+      setConteudos(newConteudos);
     } else {
       setSelectedMaterias([...selectedMaterias, materia]);
     }
   };
 
-  const handleResposta = (questaoId: number, alternativaIndex: number) => {
-    setRespostas({ ...respostas, [questaoId]: alternativaIndex });
+  const handleConteudoToggle = (materia: string, conteudo: string) => {
+    const materiaConteudos = conteudos[materia] || [];
+    if (materiaConteudos.includes(conteudo)) {
+      setConteudos({
+        ...conteudos,
+        [materia]: materiaConteudos.filter(c => c !== conteudo),
+      });
+    } else {
+      setConteudos({
+        ...conteudos,
+        [materia]: [...materiaConteudos, conteudo],
+      });
+    }
   };
 
-  const handleVerificar = () => {
-    if (Object.keys(respostas).length === 0) {
+  const handleGerarQuestoes = async () => {
+    if (!serieOuVestibular) {
       toast({
         title: "Atenção",
-        description: "Responda pelo menos uma questão",
+        description: planType === 'enem' ? "Selecione o vestibular" : "Selecione a série",
         variant: "destructive",
       });
       return;
     }
-    setMostrarResultado(true);
-    
-    const acertos = questoesExemplo.filter(q => respostas[q.id] === q.resposta).length;
-    toast({
-      title: "Resultado",
-      description: `Você acertou ${acertos} de ${Object.keys(respostas).length} questões!`,
-    });
-  };
 
-  const questoesFiltradas = questoesExemplo.filter(q => {
-    const matchMateria = selectedMaterias.length === 0 || selectedMaterias.includes(q.materia);
-    const matchDificuldade = !selectedDificuldade || q.dificuldade === selectedDificuldade;
-    return matchMateria && matchDificuldade;
-  });
+    if (selectedMaterias.length === 0) {
+      toast({
+        title: "Atenção",
+        description: "Selecione pelo menos uma matéria",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('gerar-questoes', {
+        body: {
+          tipo: planType,
+          serieOuVestibular,
+          materias: selectedMaterias,
+          conteudos,
+          observacoesAdicionais,
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso!",
+        description: "Questões geradas com sucesso!",
+      });
+
+      navigate(`/dashboard/questoes/${data.questoesId}`);
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar as questões. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -132,24 +196,59 @@ const Questoes = () => {
         <div className="mb-6">
           <h1 className="text-3xl font-heading font-bold mb-2">Buscar Questões</h1>
           <p className="text-muted-foreground">
-            Pratique com questões específicas escolhendo matérias e níveis de dificuldade.
-            Use os filtros abaixo para encontrar questões adequadas ao seu nível de estudo.
+            Configure os filtros e gere questões personalizadas para praticar.
           </p>
         </div>
 
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Filtros de Busca</CardTitle>
+              <CardTitle>Configuração de Questões</CardTitle>
               <CardDescription>
-                Personalize sua busca por questões
+                Personalize suas questões de estudo
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
+                <Label className="text-base mb-3 block">
+                  {planType === 'enem' ? 'Vestibular' : 'Série/Ano'}
+                </Label>
+                <Select value={serieOuVestibular} onValueChange={setSerieOuVestibular}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={planType === 'enem' ? 'Selecione o vestibular' : 'Selecione a série'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {planType === 'enem' ? (
+                      <>
+                        <SelectItem value="ENEM">ENEM</SelectItem>
+                        <SelectItem value="FUVEST">FUVEST</SelectItem>
+                        <SelectItem value="UNICAMP">UNICAMP</SelectItem>
+                        <SelectItem value="UNESP">UNESP</SelectItem>
+                        <SelectItem value="UERJ">UERJ</SelectItem>
+                        <SelectItem value="ITA">ITA</SelectItem>
+                        <SelectItem value="IME">IME</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="1">1º Ano</SelectItem>
+                        <SelectItem value="2">2º Ano</SelectItem>
+                        <SelectItem value="3">3º Ano</SelectItem>
+                        <SelectItem value="4">4º Ano</SelectItem>
+                        <SelectItem value="5">5º Ano</SelectItem>
+                        <SelectItem value="6">6º Ano</SelectItem>
+                        <SelectItem value="7">7º Ano</SelectItem>
+                        <SelectItem value="8">8º Ano</SelectItem>
+                        <SelectItem value="9">9º Ano</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label className="text-base mb-3 block">Matérias</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {materias.map((materia) => (
+                  {Object.keys(materias).map((materia) => (
                     <div key={materia} className="flex items-center space-x-2">
                       <Checkbox
                         id={materia}
@@ -164,88 +263,71 @@ const Questoes = () => {
                 </div>
               </div>
 
-              <div>
-                <Label className="text-base mb-3 block">Dificuldade</Label>
-                <Select value={selectedDificuldade} onValueChange={setSelectedDificuldade}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas as dificuldades" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as dificuldades</SelectItem>
-                    {dificuldades.map((dif) => (
-                      <SelectItem key={dif} value={dif}>
-                        {dif}
-                      </SelectItem>
+              {selectedMaterias.length > 0 && (
+                <div>
+                  <Label className="text-base mb-3 block">Conteúdos Específicos</Label>
+                  <div className="space-y-4">
+                    {selectedMaterias.map((materia) => (
+                      <div key={materia} className="border rounded-lg p-4">
+                        <h3 className="font-medium mb-3">{materia}</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {materias[materia]?.map((conteudo) => (
+                            <div key={conteudo} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`${materia}-${conteudo}`}
+                                checked={conteudos[materia]?.includes(conteudo) || false}
+                                onCheckedChange={() => handleConteudoToggle(materia, conteudo)}
+                              />
+                              <Label htmlFor={`${materia}-${conteudo}`} className="cursor-pointer text-sm">
+                                {conteudo}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <Label className="text-base mb-3 block">
+                  Observações Adicionais (opcional)
+                </Label>
+                <Textarea
+                  placeholder="Descreva detalhes específicos sobre o tipo de questões que você quer..."
+                  value={observacoesAdicionais}
+                  onChange={(e) => setObservacoesAdicionais(e.target.value)}
+                  rows={4}
+                />
               </div>
             </CardContent>
           </Card>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-heading font-bold">
-                Questões Encontradas ({questoesFiltradas.length})
-              </h2>
-              {Object.keys(respostas).length > 0 && (
-                <Button onClick={handleVerificar}>
-                  Verificar Respostas
-                </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleGerarQuestoes} 
+              disabled={isGenerating}
+              className="flex-1"
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Gerando Questões...
+                </>
+              ) : (
+                'Gerar Questões'
               )}
-            </div>
-
-            {questoesFiltradas.map((questao) => (
-              <Card key={questao.id}>
-                <CardHeader>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">{questao.materia}</Badge>
-                    <Badge
-                      variant={
-                        questao.dificuldade === "Fácil"
-                          ? "default"
-                          : questao.dificuldade === "Média"
-                          ? "secondary"
-                          : "destructive"
-                      }
-                    >
-                      {questao.dificuldade}
-                    </Badge>
-                  </div>
-                  <CardTitle className="text-lg">Questão {questao.id}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="font-medium">{questao.enunciado}</p>
-                  <RadioGroup
-                    value={respostas[questao.id]?.toString()}
-                    onValueChange={(value) => handleResposta(questao.id, parseInt(value))}
-                  >
-                    {questao.alternativas.map((alt, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex items-center space-x-2 p-3 rounded-lg border ${
-                          mostrarResultado && idx === questao.resposta
-                            ? "bg-green-50 border-green-500"
-                            : mostrarResultado &&
-                              respostas[questao.id] === idx &&
-                              idx !== questao.resposta
-                            ? "bg-red-50 border-red-500"
-                            : "bg-background"
-                        }`}
-                      >
-                        <RadioGroupItem value={idx.toString()} id={`q${questao.id}-${idx}`} />
-                        <Label htmlFor={`q${questao.id}-${idx}`} className="cursor-pointer flex-1">
-                          {String.fromCharCode(65 + idx)}) {alt}
-                          {mostrarResultado && idx === questao.resposta && (
-                            <span className="ml-2 text-green-600 font-medium">(Correta)</span>
-                          )}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                </CardContent>
-              </Card>
-            ))}
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate("/dashboard/questoes/historico")}
+              size="lg"
+            >
+              <History className="mr-2 h-4 w-4" />
+              Histórico de Questões
+            </Button>
           </div>
         </div>
       </div>

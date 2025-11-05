@@ -119,7 +119,11 @@ const Biblioteca = () => {
                     <p className="font-medium">Biologia</p>
                     <p className="text-sm text-muted-foreground">18 mapas disponíveis</p>
                   </div>
-                  <Button variant="outline" className="w-full mt-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2"
+                    onClick={() => navigate("/dashboard/biblioteca/mapas")}
+                  >
                     Ver Todos
                   </Button>
                 </div>
@@ -154,7 +158,11 @@ const Biblioteca = () => {
                     <p className="font-medium">Filosofia</p>
                     <p className="text-sm text-muted-foreground">10 resumos</p>
                   </div>
-                  <Button variant="outline" className="w-full mt-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2"
+                    onClick={() => navigate("/dashboard/biblioteca/resumos")}
+                  >
                     Ver Todos
                   </Button>
                 </div>
@@ -189,7 +197,11 @@ const Biblioteca = () => {
                     <p className="font-medium">Redação</p>
                     <p className="text-sm text-muted-foreground">6 apresentações</p>
                   </div>
-                  <Button variant="outline" className="w-full mt-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full mt-2"
+                    onClick={() => navigate("/dashboard/biblioteca/slides")}
+                  >
                     Ver Todos
                   </Button>
                 </div>
