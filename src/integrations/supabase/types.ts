@@ -46,6 +46,30 @@ export type Database = {
           },
         ]
       }
+      mapas_mentais: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          materia: string
+          titulo: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          id?: string
+          materia: string
+          titulo: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          materia?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -159,6 +183,30 @@ export type Database = {
           },
         ]
       }
+      resumos: {
+        Row: {
+          conteudo: string
+          created_at: string
+          id: string
+          materia: string
+          titulo: string
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string
+          id?: string
+          materia: string
+          titulo: string
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string
+          id?: string
+          materia?: string
+          titulo?: string
+        }
+        Relationships: []
+      }
       simulados: {
         Row: {
           acertos: number
@@ -213,6 +261,30 @@ export type Database = {
           titulo?: string
           total_questoes?: number
           user_id?: string
+        }
+        Relationships: []
+      }
+      slides: {
+        Row: {
+          conteudo: Json
+          created_at: string
+          id: string
+          materia: string
+          titulo: string
+        }
+        Insert: {
+          conteudo: Json
+          created_at?: string
+          id?: string
+          materia: string
+          titulo: string
+        }
+        Update: {
+          conteudo?: Json
+          created_at?: string
+          id?: string
+          materia?: string
+          titulo?: string
         }
         Relationships: []
       }

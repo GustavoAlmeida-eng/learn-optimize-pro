@@ -131,6 +131,8 @@ const NovoSimulado = () => {
   const [selectedMaterias, setSelectedMaterias] = useState<string[]>([]);
   const [selectedConteudos, setSelectedConteudos] = useState<Record<string, string[]>>({});
   const [observacoesAdicionais, setObservacoesAdicionais] = useState("");
+  const [allVestibularesSelected, setAllVestibularesSelected] = useState(false);
+  const [allSeriesSelected, setAllSeriesSelected] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
@@ -151,6 +153,35 @@ const NovoSimulado = () => {
     fetchUserPlan();
   }, [user]);
 
+  const handleSelectAllVestibulares = () => {
+    if (allVestibularesSelected) {
+      setSelectedSerieOuVestibular("");
+      setAllVestibularesSelected(false);
+    } else {
+      setSelectedSerieOuVestibular("Todos");
+      setAllVestibularesSelected(true);
+    }
+  };
+
+  const handleSelectAllSeries = () => {
+    if (allSeriesSelected) {
+      setSelectedSerieOuVestibular("");
+      setAllSeriesSelected(false);
+    } else {
+      setSelectedSerieOuVestibular("Todas");
+      setAllSeriesSelected(true);
+    }
+  };
+
+  const handleSelectAllMaterias = () => {
+    if (selectedMaterias.length === Object.keys(materias).length) {
+      setSelectedMaterias([]);
+      setSelectedConteudos({});
+    } else {
+      setSelectedMaterias(Object.keys(materias));
+    }
+  };
+
   const handleMateriaToggle = (materia: string) => {
     if (selectedMaterias.includes(materia)) {
       setSelectedMaterias(selectedMaterias.filter(m => m !== materia));
@@ -159,6 +190,24 @@ const NovoSimulado = () => {
       setSelectedConteudos(newConteudos);
     } else {
       setSelectedMaterias([...selectedMaterias, materia]);
+    }
+  };
+
+  const handleSelectAllConteudos = (materia: string) => {
+    const allConteudos = materias[materia as keyof typeof materias];
+    const currentConteudos = selectedConteudos[materia] || [];
+    
+    if (currentConteudos.length === allConteudos.length) {
+      setSelectedConteudos(prev => {
+        const newConteudos = { ...prev };
+        delete newConteudos[materia];
+        return newConteudos;
+      });
+    } else {
+      setSelectedConteudos(prev => ({
+        ...prev,
+        [materia]: allConteudos
+      }));
     }
   };
 

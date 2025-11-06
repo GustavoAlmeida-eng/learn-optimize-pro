@@ -41,7 +41,9 @@ const QuestoesView = () => {
         .single();
 
       if (error) throw error;
-      setQuestoes(Array.isArray(data.questoes) ? data.questoes : []);
+      if (data) {
+        setQuestoes(data.questoes as unknown as Questao[]);
+      }
     } catch (error) {
       console.error('Error fetching questions:', error);
       toast({
