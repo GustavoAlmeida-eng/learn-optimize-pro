@@ -63,7 +63,7 @@ const BibliotecaSlides = () => {
     try {
       const { data, error } = await supabase.from("slides").select("*").order("materia", { ascending: true });
       if (error) throw error;
-      setSlidesCollection(data || []);
+      setSlidesCollection((data as unknown as Slides[]) || []);
     } catch (error) {
       console.error("Erro ao buscar slides:", error);
     } finally {
