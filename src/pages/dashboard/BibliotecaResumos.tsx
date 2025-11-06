@@ -16,27 +16,47 @@ interface Resumo {
   conteudo: string;
 }
 
+interface ResumoContent {
+  introducao: string;
+  imagem_destaque?: string;
+  imagem_principal?: string;
+  secoes: Array<{
+    titulo: string;
+    conteudo: string;
+    exemplos?: string[];
+    destaque?: string;
+  }>;
+  resumo_final: string;
+  dicas_estudo?: string[];
+  questoes_pratica?: string[];
+}
+
 const conteudosParaGerar = [
   { titulo: "Brasil Colônia", materia: "História" },
   { titulo: "Império Brasileiro", materia: "História" },
   { titulo: "República Velha", materia: "História" },
   { titulo: "Era Vargas", materia: "História" },
+  { titulo: "Ditadura Militar", materia: "História" },
   { titulo: "Cartografia", materia: "Geografia" },
   { titulo: "Climatologia", materia: "Geografia" },
   { titulo: "Geopolítica", materia: "Geografia" },
   { titulo: "Urbanização", materia: "Geografia" },
+  { titulo: "Globalização", materia: "Geografia" },
   { titulo: "Modernismo", materia: "Literatura" },
   { titulo: "Romantismo", materia: "Literatura" },
   { titulo: "Realismo", materia: "Literatura" },
   { titulo: "Barroco", materia: "Literatura" },
+  { titulo: "Literatura Contemporânea", materia: "Literatura" },
   { titulo: "Filósofos Pré-Socráticos", materia: "Filosofia" },
   { titulo: "Platão e Aristóteles", materia: "Filosofia" },
+  { titulo: "Filosofia Moderna", materia: "Filosofia" },
   { titulo: "Sociologia Clássica", materia: "Sociologia" },
   { titulo: "Movimentos Sociais", materia: "Sociologia" },
   { titulo: "Classes Sociais", materia: "Sociologia" },
   { titulo: "Tempos Verbais em Inglês", materia: "Inglês" },
   { titulo: "Phrasal Verbs", materia: "Inglês" },
   { titulo: "Reading Comprehension", materia: "Inglês" },
+  { titulo: "Business English", materia: "Inglês" },
 ];
 
 const BibliotecaResumos = () => {
@@ -171,13 +191,93 @@ const BibliotecaResumos = () => {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{selectedResumo?.titulo}</DialogTitle>
+              <DialogTitle className="text-2xl">{selectedResumo?.titulo}</DialogTitle>
             </DialogHeader>
-            <div className="prose dark:prose-invert max-w-none">
-              <ReactMarkdown>{selectedResumo?.conteudo || ""}</ReactMarkdown>
-            </div>
+            {selectedResumo && (() => {
+              try {
+                const content: ResumoContent = JSON.parse(selectedResumo.conteudo);
+                return (
+                  <div className="space-y-6">
+                    {content.imagem_principal && (
+                      <div className="rounded-lg overflow-hidden border">
+                        <img src={content.imagem_principal} alt={selectedResumo.titulo} className="w-full max-h-64 object-cover" />
+                      </div>
+                    )}
+
+                    <div className="p-4 bg-primary/5 rounded-lg">
+                      <p className="text-lg leading-relaxed">{content.introducao}</p>
+                    </div>
+
+                    {content.secoes.map((secao, idx) => (
+                      <Card key={idx} className="p-5">
+                        <h3 className="text-xl font-bold mb-3 text-secondary">{secao.titulo}</h3>
+                        <p className="mb-4 leading-relaxed">{secao.conteudo}</p>
+                        
+                        {secao.exemplos && secao.exemplos.length > 0 && (
+                          <div className="mt-3 p-4 bg-accent/10 rounded-lg">
+                            <h4 className="font-semibold mb-2">📌 Exemplos:</h4>
+                            <ul className="space-y-2">
+                              {secao.exemplos.map((ex, exIdx) => (
+                                <li key={exIdx} className="flex items-start gap-2">
+                                  <span className="text-accent">•</span>
+                                  <span>{ex}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {secao.destaque && (
+                          <div className="mt-3 p-3 bg-primary/10 rounded-lg border-l-4 border-primary">
+                            <p className="font-semibold">💡 {secao.destaque}</p>
+                          </div>
+                        )}
+                      </Card>
+                    ))}
+
+                    <Card className="p-5 bg-secondary/10">
+                      <h3 className="text-xl font-bold mb-3">🎯 Resumo Final</h3>
+                      <p className="leading-relaxed">{content.resumo_final}</p>
+                    </Card>
+
+                    {content.dicas_estudo && content.dicas_estudo.length > 0 && (
+                      <Card className="p-5 bg-accent/10">
+                        <h3 className="text-xl font-bold mb-3">📚 Dicas de Estudo</h3>
+                        <ul className="space-y-2">
+                          {content.dicas_estudo.map((dica, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-accent">✓</span>
+                              <span>{dica}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </Card>
+                    )}
+
+                    {content.questoes_pratica && content.questoes_pratica.length > 0 && (
+                      <Card className="p-5 bg-primary/5">
+                        <h3 className="text-xl font-bold mb-3">❓ Questões para Praticar</h3>
+                        <ul className="space-y-3">
+                          {content.questoes_pratica.map((questao, idx) => (
+                            <li key={idx} className="p-3 bg-background rounded">
+                              <strong>{idx + 1}.</strong> {questao}
+                            </li>
+                          ))}
+                        </ul>
+                      </Card>
+                    )}
+                  </div>
+                );
+              } catch {
+                return (
+                  <div className="prose dark:prose-invert max-w-none">
+                    <ReactMarkdown>{selectedResumo.conteudo}</ReactMarkdown>
+                  </div>
+                );
+              }
+            })()}
           </DialogContent>
         </Dialog>
       </div>

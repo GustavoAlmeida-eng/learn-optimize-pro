@@ -12,6 +12,8 @@ interface Slide {
   numero: number;
   titulo: string;
   conteudo: string;
+  imagem_descricao?: string;
+  imagem_url?: string;
   notas?: string;
 }
 
@@ -25,24 +27,29 @@ interface Slides {
 const conteudosParaGerar = [
   { titulo: "Funções Matemáticas", materia: "Matemática" },
   { titulo: "Geometria Analítica", materia: "Matemática" },
+  { titulo: "Matrizes e Determinantes", materia: "Matemática" },
   { titulo: "Leis de Newton", materia: "Física" },
   { titulo: "Eletromagnetismo", materia: "Física" },
+  { titulo: "Energia e Trabalho", materia: "Física" },
   { titulo: "Química Orgânica", materia: "Química" },
   { titulo: "Equilíbrio Químico", materia: "Química" },
+  { titulo: "Radioatividade", materia: "Química" },
   { titulo: "Genética e Hereditariedade", materia: "Biologia" },
   { titulo: "Ecossistemas", materia: "Biologia" },
+  { titulo: "Sistema Nervoso", materia: "Biologia" },
   { titulo: "Primeira Guerra Mundial", materia: "História" },
   { titulo: "Revolução Francesa", materia: "História" },
+  { titulo: "Guerra Fria", materia: "História" },
   { titulo: "Climatologia e Tempo", materia: "Geografia" },
   { titulo: "Globalização", materia: "Geografia" },
+  { titulo: "Recursos Naturais", materia: "Geografia" },
   { titulo: "Análise Sintática", materia: "Português" },
   { titulo: "Figuras de Linguagem", materia: "Português" },
+  { titulo: "Redação ENEM", materia: "Português" },
   { titulo: "Present Perfect", materia: "Inglês" },
   { titulo: "Conditional Sentences", materia: "Inglês" },
   { titulo: "Teoria Platônica", materia: "Filosofia" },
   { titulo: "Ética e Moral", materia: "Filosofia" },
-  { titulo: "Classes Sociais", materia: "Sociologia" },
-  { titulo: "Cultura e Sociedade", materia: "Sociologia" },
 ];
 
 const BibliotecaSlides = () => {
@@ -161,24 +168,65 @@ const BibliotecaSlides = () => {
             </DialogHeader>
             {currentSlide && (
               <div className="flex-1 flex flex-col">
-                <div className="flex-1 flex flex-col items-center justify-center bg-secondary/20 rounded-lg p-8">
-                  <h2 className="text-3xl font-bold mb-6 text-center">{currentSlide.titulo}</h2>
-                  <div className="text-lg whitespace-pre-line text-center max-w-3xl">{currentSlide.conteudo}</div>
+                <div className="flex-1 flex flex-col bg-gradient-to-br from-background to-secondary/10 rounded-lg p-8 overflow-y-auto">
+                  <h2 className="text-4xl font-bold mb-6 text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    {currentSlide.titulo}
+                  </h2>
+                  
+                  {currentSlide.imagem_url && (
+                    <div className="mb-6 rounded-lg overflow-hidden border shadow-lg">
+                      <img 
+                        src={currentSlide.imagem_url} 
+                        alt={currentSlide.titulo} 
+                        className="w-full max-h-72 object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="text-lg leading-relaxed space-y-4 max-w-3xl mx-auto">
+                    {currentSlide.conteudo.split('\n').map((linha, idx) => (
+                      <div key={idx} className="flex items-start gap-3">
+                        {linha.trim().startsWith('•') || linha.trim().startsWith('-') ? (
+                          <>
+                            <span className="text-primary text-2xl">•</span>
+                            <p className="flex-1">{linha.replace(/^[•\-]\s*/, '')}</p>
+                          </>
+                        ) : (
+                          <p className="w-full">{linha}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
                   {currentSlide.notas && (
-                    <div className="mt-6 text-sm text-muted-foreground italic">
-                      <p><strong>Notas:</strong> {currentSlide.notas}</p>
+                    <div className="mt-auto pt-6 border-t">
+                      <div className="text-sm text-muted-foreground bg-accent/10 p-4 rounded-lg">
+                        <p><strong>📝 Notas:</strong> {currentSlide.notas}</p>
+                      </div>
                     </div>
                   )}
                 </div>
-                <div className="flex items-center justify-between mt-4">
-                  <Button variant="outline" onClick={() => setCurrentSlideIndex(currentSlideIndex - 1)} disabled={currentSlideIndex === 0}>
-                    <ChevronLeft className="h-4 w-4 mr-2" />Anterior
+                <div className="flex items-center justify-between mt-4 px-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setCurrentSlideIndex(currentSlideIndex - 1)} 
+                    disabled={currentSlideIndex === 0}
+                    className="gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />Anterior
                   </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Slide {currentSlideIndex + 1} de {selectedSlides?.conteudo.length}
-                  </span>
-                  <Button variant="outline" onClick={() => setCurrentSlideIndex(currentSlideIndex + 1)} disabled={!selectedSlides || currentSlideIndex === selectedSlides.conteudo.length - 1}>
-                    Próximo<ChevronRight className="h-4 w-4 ml-2" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      Slide {currentSlideIndex + 1} de {selectedSlides?.conteudo.length}
+                    </span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setCurrentSlideIndex(currentSlideIndex + 1)} 
+                    disabled={!selectedSlides || currentSlideIndex === selectedSlides.conteudo.length - 1}
+                    className="gap-2"
+                  >
+                    Próximo<ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

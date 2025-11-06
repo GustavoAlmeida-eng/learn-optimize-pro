@@ -16,27 +16,46 @@ interface MapaMental {
   conteudo: string;
 }
 
+interface MapaContent {
+  conceito_central: string;
+  descricao_imagem?: string;
+  imagem_principal?: string;
+  ramos: Array<{
+    titulo: string;
+    subtopicos: string[];
+    exemplos?: string;
+    destaque?: string;
+  }>;
+  conexoes?: string[];
+  dicas_estudo?: string[];
+}
+
 const conteudosParaGerar = [
   { titulo: "Álgebra Básica", materia: "Matemática" },
   { titulo: "Geometria Plana", materia: "Matemática" },
   { titulo: "Trigonometria", materia: "Matemática" },
-  { titulo: "Funções", materia: "Matemática" },
+  { titulo: "Funções Matemáticas", materia: "Matemática" },
+  { titulo: "Estatística e Probabilidade", materia: "Matemática" },
   { titulo: "Mecânica Clássica", materia: "Física" },
   { titulo: "Termodinâmica", materia: "Física" },
   { titulo: "Eletromagnetismo", materia: "Física" },
-  { titulo: "Óptica", materia: "Física" },
+  { titulo: "Óptica e Ondas", materia: "Física" },
+  { titulo: "Física Moderna", materia: "Física" },
   { titulo: "Química Orgânica", materia: "Química" },
   { titulo: "Tabela Periódica", materia: "Química" },
   { titulo: "Reações Químicas", materia: "Química" },
   { titulo: "Estequiometria", materia: "Química" },
+  { titulo: "Ligações Químicas", materia: "Química" },
   { titulo: "Citologia", materia: "Biologia" },
-  { titulo: "Genética", materia: "Biologia" },
-  { titulo: "Ecologia", materia: "Biologia" },
-  { titulo: "Evolução", materia: "Biologia" },
+  { titulo: "Genética Mendeliana", materia: "Biologia" },
+  { titulo: "Ecologia e Meio Ambiente", materia: "Biologia" },
+  { titulo: "Evolução das Espécies", materia: "Biologia" },
+  { titulo: "Fisiologia Humana", materia: "Biologia" },
   { titulo: "Brasil Colônia", materia: "História" },
   { titulo: "Revolução Industrial", materia: "História" },
+  { titulo: "Guerras Mundiais", materia: "História" },
   { titulo: "Cartografia", materia: "Geografia" },
-  { titulo: "Geopolítica", materia: "Geografia" },
+  { titulo: "Geopolítica Mundial", materia: "Geografia" },
 ];
 
 const BibliotecaMapas = () => {
@@ -171,13 +190,82 @@ const BibliotecaMapas = () => {
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{selectedMapa?.titulo}</DialogTitle>
+              <DialogTitle className="text-2xl">{selectedMapa?.titulo}</DialogTitle>
             </DialogHeader>
-            <div className="prose dark:prose-invert max-w-none">
-              <ReactMarkdown>{selectedMapa?.conteudo || ""}</ReactMarkdown>
-            </div>
+            {selectedMapa && (() => {
+              try {
+                const content: MapaContent = JSON.parse(selectedMapa.conteudo);
+                return (
+                  <div className="space-y-6">
+                    {content.imagem_principal && (
+                      <div className="rounded-lg overflow-hidden border">
+                        <img src={content.imagem_principal} alt={content.conceito_central} className="w-full" />
+                      </div>
+                    )}
+                    
+                    <div className="text-center p-6 bg-primary/10 rounded-lg">
+                      <h2 className="text-3xl font-bold text-primary">{content.conceito_central}</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {content.ramos.map((ramo, idx) => (
+                        <Card key={idx} className="p-4">
+                          <h3 className="text-xl font-bold mb-3 text-secondary">{ramo.titulo}</h3>
+                          <ul className="space-y-2 mb-3">
+                            {ramo.subtopicos.map((sub, subIdx) => (
+                              <li key={subIdx} className="flex items-start gap-2">
+                                <span className="text-primary">•</span>
+                                <span>{sub}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          {ramo.exemplos && (
+                            <div className="mt-3 p-3 bg-accent/10 rounded">
+                              <p className="text-sm"><strong>Exemplos:</strong> {ramo.exemplos}</p>
+                            </div>
+                          )}
+                          {ramo.destaque && (
+                            <div className="mt-2 p-2 bg-primary/10 rounded">
+                              <p className="text-sm font-semibold">💡 {ramo.destaque}</p>
+                            </div>
+                          )}
+                        </Card>
+                      ))}
+                    </div>
+
+                    {content.conexoes && content.conexoes.length > 0 && (
+                      <Card className="p-4 bg-secondary/10">
+                        <h3 className="text-lg font-bold mb-2">🔗 Conexões entre Conceitos</h3>
+                        <ul className="space-y-1">
+                          {content.conexoes.map((conexao, idx) => (
+                            <li key={idx} className="text-sm">{conexao}</li>
+                          ))}
+                        </ul>
+                      </Card>
+                    )}
+
+                    {content.dicas_estudo && content.dicas_estudo.length > 0 && (
+                      <Card className="p-4 bg-accent/10">
+                        <h3 className="text-lg font-bold mb-2">📚 Dicas de Estudo</h3>
+                        <ul className="space-y-1">
+                          {content.dicas_estudo.map((dica, idx) => (
+                            <li key={idx} className="text-sm">{dica}</li>
+                          ))}
+                        </ul>
+                      </Card>
+                    )}
+                  </div>
+                );
+              } catch {
+                return (
+                  <div className="prose dark:prose-invert max-w-none">
+                    <ReactMarkdown>{selectedMapa.conteudo}</ReactMarkdown>
+                  </div>
+                );
+              }
+            })()}
           </DialogContent>
         </Dialog>
       </div>

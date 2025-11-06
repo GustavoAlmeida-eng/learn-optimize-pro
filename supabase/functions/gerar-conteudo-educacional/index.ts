@@ -30,46 +30,61 @@ serve(async (req) => {
       tableName = 'mapas_mentais';
       prompt = `Crie um mapa mental COMPLETO e DETALHADO sobre "${titulo}" da matéria ${materia}.
       
-      O mapa mental deve incluir:
-      - Conceito central claramente definido
-      - 5-8 ramos principais com subtópicos detalhados
-      - Conexões entre conceitos
-      - Exemplos práticos
-      - Fórmulas ou definições importantes (quando aplicável)
-      
-      Retorne em formato Markdown com emojis para melhor visualização.`;
+      Retorne um JSON com a seguinte estrutura:
+      {
+        "conceito_central": "Conceito principal",
+        "descricao_imagem": "Descrição detalhada para gerar uma imagem de mapa mental visual com o conceito central no meio e ramos ao redor",
+        "ramos": [
+          {
+            "titulo": "Ramo Principal",
+            "subtopicos": ["subtópico 1", "subtópico 2"],
+            "exemplos": "Exemplos práticos",
+            "destaque": "Ponto importante"
+          }
+        ],
+        "conexoes": ["Relação entre conceitos"],
+        "dicas_estudo": ["Dica 1", "Dica 2"]
+      }`;
     } else if (tipo === 'resumo') {
       tableName = 'resumos';
       prompt = `Crie um resumo COMPLETO e EDUCATIVO sobre "${titulo}" da matéria ${materia}.
       
-      O resumo deve incluir:
-      - Introdução ao tema
-      - Conceitos principais explicados de forma clara
-      - Exemplos práticos e aplicações
-      - Dicas de estudo e pontos importantes
-      - Resumo final com os principais pontos
-      
-      Use Markdown para formatação, com títulos, listas e negrito quando necessário.
-      Tamanho: 800-1200 palavras.`;
+      Retorne um JSON com a seguinte estrutura:
+      {
+        "introducao": "Texto introdutório envolvente",
+        "imagem_destaque": "Descrição para gerar imagem ilustrativa do tema",
+        "secoes": [
+          {
+            "titulo": "Título da Seção",
+            "conteudo": "Conteúdo detalhado",
+            "exemplos": ["Exemplo 1", "Exemplo 2"],
+            "destaque": "Ponto importante"
+          }
+        ],
+        "resumo_final": "Síntese dos pontos principais",
+        "dicas_estudo": ["Dica 1", "Dica 2"],
+        "questoes_pratica": ["Questão reflexiva 1", "Questão reflexiva 2"]
+      }`;
     } else if (tipo === 'slide') {
       tableName = 'slides';
       prompt = `Crie uma apresentação em slides sobre "${titulo}" da matéria ${materia}.
       
-      Retorne APENAS um JSON array com 8-12 slides no seguinte formato:
+      Retorne APENAS um JSON array com 10-15 slides no seguinte formato:
       [
         {
           "numero": 1,
           "titulo": "Título do Slide",
           "conteudo": "Conteúdo do slide com bullets points",
+          "imagem_descricao": "Descrição para gerar imagem ilustrativa (opcional)",
           "notas": "Notas para o apresentador (opcional)"
         }
       ]
       
-      Estrutura sugerida:
-      - Slide 1: Título e introdução
-      - Slides 2-3: Conceitos fundamentais
-      - Slides 4-8: Desenvolvimento do tema com exemplos
-      - Slide 9-10: Aplicações práticas
+      Estrutura:
+      - Slide 1: Título e introdução com imagem de capa
+      - Slides 2-4: Conceitos fundamentais com ilustrações
+      - Slides 5-10: Desenvolvimento com exemplos e diagramas
+      - Slides 11-13: Aplicações práticas com casos reais
       - Último slide: Resumo e conclusão`;
     }
 
@@ -93,19 +108,51 @@ serve(async (req) => {
     }
 
     const aiData = await aiResponse.json();
-    let conteudo = aiData.choices[0].message.content;
+    let conteudo = aiData.choices[0].message.content.trim().replace(/```json\n?|```\n?/g, '');
+    
+    const parsedContent = JSON.parse(conteudo);
+
+    // Gerar imagem ilustrativa baseada no conteúdo
+    let imageUrl = null;
+    try {
+      let imagePrompt = '';
+      
+      if (tipo === 'mapa' && parsedContent.descricao_imagem) {
+        imagePrompt = `Educational mind map diagram: ${parsedContent.descricao_imagem}. Style: clean, colorful, professional educational illustration`;
+      } else if (tipo === 'resumo' && parsedContent.imagem_destaque) {
+        imagePrompt = `Educational illustration: ${parsedContent.imagem_destaque}. Style: clean, modern, educational`;
+      } else if (tipo === 'slide' && parsedContent[0]?.imagem_descricao) {
+        imagePrompt = `Educational illustration: ${parsedContent[0].imagem_descricao}. Style: professional presentation graphic`;
+      }
+
+      if (imagePrompt) {
+        const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash-image-preview',
+            messages: [{ role: 'user', content: imagePrompt }],
+            modalities: ['image', 'text']
+          }),
+        });
+
+        if (imageResponse.ok) {
+          const imageData = await imageResponse.json();
+          imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        }
+      }
+    } catch (imgError) {
+      console.error('Error generating image:', imgError);
+    }
 
     let insertData: any = {
       titulo,
       materia,
+      conteudo: tipo === 'slide' ? parsedContent : JSON.stringify({ ...parsedContent, imagem_principal: imageUrl }),
     };
-
-    if (tipo === 'slide') {
-      conteudo = conteudo.trim().replace(/```json\n?|```\n?/g, '');
-      insertData.conteudo = JSON.parse(conteudo);
-    } else {
-      insertData.conteudo = conteudo;
-    }
 
     const { data, error } = await supabaseClient
       .from(tableName)
